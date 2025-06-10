@@ -31,7 +31,7 @@ export async function startDCN(sendUpdateToClients) {
               outFormat: oracledb.OUT_FORMAT_OBJECT,
             }
           );
-          await conn.close();
+          // await conn.close();
 
           sendUpdateToClients(result.rows);
           console.log("resultado");
