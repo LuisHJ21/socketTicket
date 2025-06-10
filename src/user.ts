@@ -6,7 +6,8 @@ export async function GetUsuariosTI() {
   try {
     const result = await conn.execute(
       `
-        select u.cod_usr,u.nombre from usuario u where u.perfil='DEVELOP' and u.cod_usr!='rramir'
+        select  COD_USR, NOMBRE from usuario
+where PERFIL in ('OPER_TI')
       `,
       [], // parámetros (vacío si no hay)
       {
@@ -16,7 +17,7 @@ export async function GetUsuariosTI() {
 
     return result.rows;
   } catch (error) {
-    console.error("❌ Error en polling:", error);
+    console.error("❌ Error al obtener usuarios:", error);
     return [];
   } finally {
     await conn.close();
