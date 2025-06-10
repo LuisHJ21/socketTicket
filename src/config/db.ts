@@ -21,6 +21,19 @@ const dbConfigFish = {
     "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.4)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl.fisholg)))",
 };
 
+async function inicializarPool() {
+  try {
+    await oracledb.createPool(dbConfig);
+    console.log(colors.bgGreen.white.bold("✅ POOL DE CONEXIÓN CREADO"));
+  } catch (err) {
+    console.error(
+      colors.bgRed.white.bold("❌ ERROR AL CREAR EL POOL DE CONEXIÓN:"),
+      err
+    );
+    process.exit(1);
+  }
+}
+
 async function conectarDB() {
   try {
     const connection = await oracledb.getConnection(dbConfig);
@@ -35,12 +48,23 @@ async function conectarDB() {
 async function conectarDBFish() {
   try {
     const connection = await oracledb.getConnection(dbConfigFish);
-    console.log(colors.bgGreen.white.bold("CONEXION DB EXITOSA"));
+    console.log(colors.bgGreen.white.bold("CONEXION DB EXITOSA FISHOLG"));
     return connection;
   } catch (error) {
-    console.log(colors.bgRed.white.bold("CONEXION DB FALLIDA: " + error));
+    console.log(
+      colors.bgRed.white.bold("CONEXION DB FALLIDA FISHOLG: " + error)
+    );
     throw error;
   }
 }
 
-export { conectarDB, oracledb, conectarDBFish };
+async function cerrarPool() {
+  try {
+    await oracledb.getPool().close(10);
+    console.log(colors.bgYellow.black("👋 POOL CERRADO CORRECTAMENTE"));
+  } catch (err) {
+    console.error("❌ ERROR AL CERRAR EL POOL", err);
+  }
+}
+
+export { conectarDB, oracledb, conectarDBFish, inicializarPool, cerrarPool };
