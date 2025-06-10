@@ -1,25 +1,31 @@
 import { conectarDB, oracledb } from "./config/db";
+import colors from "colors";
+
+let dcnConnection = null;
+let currentSubscriptionName = null;
 
 export async function startDCN(sendUpdateToClients) {
   try {
     //await eliminarSuscripcionesActivas(); //  cancela todo antes de suscribirse
 
-    const connection = await conectarDB();
+    const dcnConnection = await conectarDB();
+    currentSubscriptionName = `subs_tickets_${Date.now()}`;
 
-    await connection.subscribe(`subs_tickets_${Date.now()}`, {
+    await dcnConnection.subscribe(currentSubscriptionName, {
       sql: `select t.id_ticket,t.usu_gen as CREADO,a.usu_operador as ATENDIDO,t.flag_estado,t.asunto,
-  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket
+  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket,t.flag_proceso
   from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket`,
       callback: async (message) => {
         console.log("🔔 Notificación DCN recibida:", message);
+        let conn = null;
         try {
           console.log("🔔 Cambio detectado:", message);
 
-          const conn = await conectarDB();
+          conn = await conectarDB();
           const result = await conn.execute(
             `select t.id_ticket,t.usu_gen as CREADO,a.usu_operador as ATENDIDO,t.flag_estado,t.asunto,
-  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket
-  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket`,
+  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket,t.flag_proceso
+  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket where t.flag_estado!='5'  order by  t.flag_proceso desc,t.fech_registro asc`,
             [], // parámetros (vacío si no hay)
             {
               outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -34,6 +40,8 @@ export async function startDCN(sendUpdateToClients) {
             "❌ Error al consultar datos tras notificación:",
             queryErr
           );
+        } finally {
+          if (conn) await conn.close();
         }
       },
       qos: oracledb.SUBSCR_QOS_ROWIDS,
@@ -56,8 +64,8 @@ export async function getTicketData() {
   try {
     const result = await conn.execute(
       ` select t.id_ticket,t.usu_gen as CREADO,a.usu_operador as ATENDIDO,t.flag_estado,t.asunto,
-  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket
-  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket where t.flag_estado!='5'  order by t.fech_registro asc`,
+  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket,t.flag_proceso
+  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket where t.flag_estado!='5'  order by  t.flag_proceso desc,t.fech_registro asc`,
       [], // parámetros (vacío si no hay)
       {
         outFormat: oracledb.OUT_FORMAT_OBJECT,
@@ -92,5 +100,19 @@ async function eliminarSuscripcionesActivas() {
     console.error("❌ Error al eliminar suscripciones activas:", err);
   } finally {
     await conn.close();
+  }
+}
+
+export async function cerrarDCN() {
+  if (dcnConnection && currentSubscriptionName) {
+    try {
+      await dcnConnection.unsubscribe(currentSubscriptionName);
+      await dcnConnection.close();
+      console.log(
+        colors.bgYellow.black("👋 Suscripción DCN cerrada correctamente")
+      );
+    } catch (err) {
+      console.error("❌ Error al cerrar la suscripción DCN:", err);
+    }
   }
 }
