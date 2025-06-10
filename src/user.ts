@@ -18,5 +18,7 @@ export async function GetUsuariosTI() {
   } catch (error) {
     console.error("❌ Error en polling:", error);
     return [];
+  } finally {
+    await conn.close();
   }
 }
