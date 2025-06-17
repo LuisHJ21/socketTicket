@@ -8,9 +8,9 @@ export async function Polling(sendUpdateToClients, intervalMs = 5000) {
     try {
       const result = await conn.execute(
         `
-        select t.id_ticket,t.usu_gen as CREADO,a.usu_operador as ATENDIDO,t.flag_estado,t.asunto,
-  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,t.tipo_ticket
-  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket where t.flag_estado!='5'  order by t.fech_registro asc
+         select t.id_ticket,t.usu_gen as CREADO,a.usu_operador as ATENDIDO,t.flag_estado,t.asunto,
+  to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,t.siglas_empresa,tt.descripcion tipo_ticket,t.flag_proceso
+  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket left join TIPO_TICKET tt on t.tipo_ticket=tt.id_ticket where t.flag_estado!='5'  order by  t.flag_proceso desc,t.fech_registro asc
       `,
         [], // parámetros (vacío si no hay)
         {

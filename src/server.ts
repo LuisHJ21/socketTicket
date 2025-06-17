@@ -5,6 +5,7 @@ import { Server as ServerSocket } from "socket.io";
 import { cerrarDCN, getTicketData, startDCN } from "./dcnNotifier";
 import { GetUsuariosTI } from "./user";
 import { inicializarPool, cerrarPool } from "./config/db";
+import { Polling } from "./polling";
 
 dotenv.config();
 
@@ -15,12 +16,15 @@ const server = http.createServer(app);
 const io = new ServerSocket(server);
 
 // Inicializar pool antes de cualquier conexión
+let stopPolling;
 (async () => {
   try {
     await inicializarPool();
 
     // Iniciar la suscripción DCN una vez que el pool esté listo
-    await startDCN(sendUpdateToClients);
+    // await startDCN(sendUpdateToClients);
+
+    stopPolling = await Polling(sendUpdateToClients, 5000);
 
     server.listen(process.env.PORT, () => {
       console.log(
@@ -52,19 +56,52 @@ function sendUpdateToClients(data) {
 }
 
 // Maneja cierre limpio del servidor
+
 process.on("SIGINT", async () => {
+  console.log("\n🛑 Cerrando servidor...");
+
+  try {
+    if (stopPolling) await stopPolling();
+    await cerrarPool();
+    io.close(() => {
+      console.log("Conexiones de socket cerradas.");
+
+      // Cerrar servidor HTTP
+      server.close(() => {
+        console.log("Servidor HTTP cerrado.");
+        process.exit(0);
+      });
+    });
+  } catch (error) {
+    console.error("❌ Error al cerrar el servidor:", error);
+    process.exit(1);
+  }
+});
+
+/* 
+async function apagarTodo() {
   console.log("\n🛑 Cerrando servidor...");
 
   try {
     await cerrarDCN();
     await cerrarPool();
 
-    server.close(() => {
-      console.log("👋 Servidor detenido correctamente");
-      process.exit(0);
+    // Cerrar socket.io
+    io.close(() => {
+      console.log("Conexiones de socket cerradas.");
+
+      // Cerrar servidor HTTP
+      server.close(() => {
+        console.log("Servidor HTTP cerrado.");
+        process.exit(0);
+      });
     });
   } catch (err) {
     console.error("❌ Error al cerrar el servidor:", err);
     process.exit(1);
   }
-});
+}
+
+process.on("SIGINT", apagarTodo);
+process.on("SIGTERM", apagarTodo);
+ */
