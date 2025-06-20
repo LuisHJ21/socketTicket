@@ -8,8 +8,8 @@ oracledb.initOracleClient();
 const dbConfig = {
   user: process.env.USERDB,
   password: process.env.PASSDB,
-  connectString:
-    "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.4)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl.fisholg)))",
+  connectString: process.env.DATABASE,
+  //"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.4)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl.fisholg)))",
   // Puedes agregar más opciones aquí si necesitas
   events: true, // ✅ esto es clave para habilitar DCN
 };
@@ -19,6 +19,12 @@ const dbConfigFish = {
   password: process.env.PASSDB2,
   connectString:
     "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.4)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl.fisholg)))",
+};
+
+const dbConfigGrupo = {
+  user: process.env.USERDB3,
+  password: process.env.PASSDB3,
+  connectString: process.env.DATABASE3,
 };
 
 async function inicializarPool() {
