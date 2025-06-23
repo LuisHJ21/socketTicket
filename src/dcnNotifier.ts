@@ -1,5 +1,6 @@
 import { conectarDB, oracledb } from "./config/db";
 import colors from "colors";
+import { obtenerUsuarios } from "./polling";
 
 let dcnConnection = null;
 let currentSubscriptionName = null;
@@ -72,7 +73,7 @@ export async function getTicketData() {
       }
     );
 
-    return result.rows;
+    return obtenerUsuarios(result.rows);
   } finally {
     await conn.close();
   }

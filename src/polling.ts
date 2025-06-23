@@ -82,7 +82,7 @@ const obtenerUsuarios = async (arrayTickets) => {
 
       nuevaSalida.push({
         ...row,
-        NOMBRE: descripcion || "USER NOT FOUND",
+        NOMBRE: descripcion || `USER ${row.CREADO} NOT FOUND`,
         error,
       });
       await conn.close();
@@ -97,3 +97,5 @@ const obtenerUsuarios = async (arrayTickets) => {
 
   return nuevaSalida;
 };
+
+export { obtenerUsuarios };
