@@ -7,6 +7,8 @@ const configIni: IniConfig = ini.parse(
   fs.readFileSync("D:\\SYNERGY\\exe\\empresas.ini", "utf-8")
 );
 
+const userCache= new Map()
+
 export const Polling = async (sendUpdateToClients, intervalMs = 5000) => {
   const conn = await conectarDB();
   console.log("🔗 Conexión abierta para polling persistente");
@@ -24,6 +26,7 @@ export const Polling = async (sendUpdateToClients, intervalMs = 5000) => {
           outFormat: oracledb.OUT_FORMAT_OBJECT,
         }
       );
+      //console.log(userCache)
 
       const dataCompleta = await obtenerUsuarios(result.rows);
       //console.log(dataCompleta);
@@ -46,9 +49,7 @@ const obtenerUsuarios = async (arrayTickets) => {
   const nuevaSalida = [];
 
   for (const row of arrayTickets) {
-    try {
-      let descripcion = null;
-      let error = null;
+
 
       const esquema = configIni.Esquema[row.SIGLAS_EMPRESA.trim()]?.trim();
       const password = configIni.Password[row.SIGLAS_EMPRESA.trim()]?.trim();
@@ -56,46 +57,72 @@ const obtenerUsuarios = async (arrayTickets) => {
         ?.trim()
         .replace(/'/g, "");
 
-      const conn = await oracledb.getConnection({
-        user: esquema,
-        password,
-        connectionString: baseDatos,
-      });
+      const clave=`${row.SIGLAS_EMPRESA.trim()}-${row.CREADO.trim()}`
 
-      if (!esquema) {
-        error = `No se encontró esquema para sigla ${row.SIGLAS_EMPRESA}`;
-      } else {
-        try {
-          const sql = `SELECT nombre FROM ${esquema}.usuario WHERE cod_usr = :id`;
-          const res = await conn.execute<{ NOMBRE: string }>(
-            sql,
-            [row.CREADO],
-            {
-              outFormat: oracledb.OUT_FORMAT_OBJECT,
-            }
-          );
-          descripcion = res.rows[0]?.NOMBRE || null;
-        } catch (err) {
-          error = err.message;
-        }
+      if(userCache.has(clave))
+      {
+          nuevaSalida.push({...row,NOMBRE:userCache.get(clave).NOMBRE})
+          continue;
+
       }
 
-      nuevaSalida.push({
-        ...row,
-        NOMBRE: descripcion || `USER ${row.CREADO} NOT FOUND`,
-        error,
-      });
-      await conn.close();
-    } catch (error) {
-      nuevaSalida.push({
-        ...row,
-        NOMBRE: "BD ERROR",
-        error,
-      });
-    }
+      const consultarUser=await obtenerUsuarioDB(esquema,baseDatos,password,row)
+
+
+        userCache.set(clave,consultarUser)
+
+        nuevaSalida.push({...row,NOMBRE:consultarUser.NOMBRE})
+
+
   }
 
   return nuevaSalida;
 };
+
+
+const obtenerUsuarioDB= async(esquema:string,baseDatos:string,pass:string,dataUsuario:TicketData)=>
+{
+//console.log('consultando base de datos')
+  let descripcion = null;
+  let error = null;
+
+  try{
+
+    const conn = await oracledb.getConnection({
+      user: esquema,
+      password:pass,
+      connectionString: baseDatos,
+    });
+
+    if (!esquema) {
+      error = `No se encontró esquema`;
+    } else {
+      try {
+        const sql = `SELECT nombre FROM ${esquema}.usuario WHERE cod_usr = :id`;
+        const res = await conn.execute<{ NOMBRE: string }>(
+            sql,
+            [dataUsuario.CREADO],
+            {
+              outFormat: oracledb.OUT_FORMAT_OBJECT,
+            }
+        );
+        descripcion = res.rows[0]?.NOMBRE || null;
+      } catch (err) {
+        error = err.message;
+      }
+    }
+
+
+    await conn.close();
+    return  {NOMBRE:descripcion || `USER ${dataUsuario.CREADO} NOT FOUND`}
+
+
+  } catch (error) {
+
+    return  {NOMBRE:"BD ERROR"}
+
+  }
+}
+
 
 export { obtenerUsuarios };
