@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import http from "http";
 import { Server as ServerSocket } from "socket.io";
-import { cerrarDCN, getTicketData, startDCN } from "./dcnNotifier";
+import {  getTicketData, startDCN } from "./dcnNotifier";
 import { GetUsuariosTI } from "./user";
 import { inicializarPool, cerrarPool } from "./config/db";
 import { Polling } from "./polling";
@@ -61,7 +61,7 @@ process.on("SIGINT", async () => {
   console.log("\n🛑 Cerrando servidor...");
 
   try {
-    if (stopPolling) await stopPolling();
+    
     await cerrarPool();
     io.close(() => {
       console.log("Conexiones de socket cerradas.");
@@ -77,31 +77,3 @@ process.on("SIGINT", async () => {
     process.exit(1);
   }
 });
-
-/* 
-async function apagarTodo() {
-  console.log("\n🛑 Cerrando servidor...");
-
-  try {
-    await cerrarDCN();
-    await cerrarPool();
-
-    // Cerrar socket.io
-    io.close(() => {
-      console.log("Conexiones de socket cerradas.");
-
-      // Cerrar servidor HTTP
-      server.close(() => {
-        console.log("Servidor HTTP cerrado.");
-        process.exit(0);
-      });
-    });
-  } catch (err) {
-    console.error("❌ Error al cerrar el servidor:", err);
-    process.exit(1);
-  }
-}
-
-process.on("SIGINT", apagarTodo);
-process.on("SIGTERM", apagarTodo);
- */

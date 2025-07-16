@@ -69,6 +69,7 @@ const obtenerUsuarios = async (arrayTickets) => {
       const consultarUser=await obtenerUsuarioDB(esquema,baseDatos,password,row)
 
 
+        if(consultarUser.NOMBRE && consultarUser.NOMBRE!=='BD ERROR')
         userCache.set(clave,consultarUser)
 
         nuevaSalida.push({...row,NOMBRE:consultarUser.NOMBRE})
