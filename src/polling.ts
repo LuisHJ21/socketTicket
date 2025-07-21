@@ -1,4 +1,4 @@
-import { conectarDB, oracledb } from "./config/db";
+import { conectarDB, oracledb,conectarDBFish } from "./config/db";
 import fs from "fs";
 import ini from "ini";
 import { EsquemaConfig, IniConfig, TicketData, Ticketusuario } from "./types";
@@ -66,7 +66,7 @@ const obtenerUsuarios = async (arrayTickets) => {
 
       }
 
-      const consultarUser=await obtenerUsuarioDB(esquema,baseDatos,password,row)
+      const consultarUser=await obtenerUsuarioDB(esquema,row)
 
 
         if(consultarUser.NOMBRE && consultarUser.NOMBRE!=='BD ERROR')
@@ -81,7 +81,7 @@ const obtenerUsuarios = async (arrayTickets) => {
 };
 
 
-const obtenerUsuarioDB= async(esquema:string,baseDatos:string,pass:string,dataUsuario:TicketData)=>
+const obtenerUsuarioDB= async(esquema:string,dataUsuario:TicketData)=>
 {
 //console.log('consultando base de datos')
   let descripcion = null;
@@ -89,24 +89,22 @@ const obtenerUsuarioDB= async(esquema:string,baseDatos:string,pass:string,dataUs
 
   try{
 
-    const conn = await oracledb.getConnection({
-      user: esquema,
-      password:pass,
-      connectionString: baseDatos,
-    });
+    const conn = await conectarDBFish()
 
     if (!esquema) {
       error = `No se encontró esquema`;
     } else {
       try {
-        const sql = `SELECT nombre FROM ${esquema}.usuario WHERE cod_usr = :id`;
+        // const sql = `SELECT nombre FROM ${esquema}.usuario WHERE cod_usr = :id`;
+        const sql = `SELECT nombre FROM MV_REGISTRO_USUARIO WHERE cod_usr = :id AND trim(siglas)= trim(:siglasEmpresa)`;
         const res = await conn.execute<{ NOMBRE: string }>(
             sql,
-            [dataUsuario.CREADO],
+            [dataUsuario.CREADO,dataUsuario.SIGLAS_EMPRESA],
             {
               outFormat: oracledb.OUT_FORMAT_OBJECT,
             }
         );
+       // console.log(sql,res,dataUsuario)
         descripcion = res.rows[0]?.NOMBRE || null;
       } catch (err) {
         error = err.message;
