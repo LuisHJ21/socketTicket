@@ -17,8 +17,8 @@ const dbConfig = {
 const dbConfigFish = {
   user: process.env.USERDB2,
   password: process.env.PASSDB2,
-  connectString:
-    "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.4)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl.fisholg)))",
+  connectString:process.env.DATABASE2
+   // "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=192.168.10.4)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=orcl.fisholg)))",
 };
 
 const dbConfigGrupo = {
