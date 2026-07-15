@@ -38,7 +38,7 @@ let stopPolling;
 })();
 
 io.on("connection", async (socket) => {
-  console.log("🟢 Cliente conectado vía Socket.IO");
+  console.log("Cliente conectado vía Socket.IO");
 
   const data = await getTicketData();
   socket.emit("db_update", data);
@@ -46,10 +46,18 @@ io.on("connection", async (socket) => {
   const usuarios = await GetUsuariosTI();
   socket.emit("db_user", usuarios);
 
+
+  socket.on("update_user", async () => {
+    const usuarios = await GetUsuariosTI();
+    socket.emit("db_user", usuarios);
+  });
+
   socket.on("disconnect", () => {
-    console.log("🔴 Cliente desconectado");
+    console.log("Cliente desconectado");
   });
 });
+
+
 
 function sendUpdateToClients(data) {
   io.emit("db_update", data);
