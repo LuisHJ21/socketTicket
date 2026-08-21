@@ -11,6 +11,7 @@ export interface TicketData {
   FLAG_ESTADO: string;
   ASUNTO: string;
   FECH_REGISTRO: string; // Formato 'dd/mm/yyyy HH24:mi:ss'
+  FECH_ACTUALIZA: string; 
   SIGLAS_EMPRESA: string;
   TIPO_TICKET: string;
   FLAG_PROCESO: string;
