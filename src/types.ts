@@ -11,7 +11,8 @@ export interface TicketData {
   FLAG_ESTADO: string;
   ASUNTO: string;
   FECH_REGISTRO: string; // Formato 'dd/mm/yyyy HH24:mi:ss'
-  FECH_ACTUALIZA: string; 
+  FECH_ACTUALIZA: string;
+  FECH_ASIG: string | null; // Fecha de asignacion (ASIG_TICKET.FECH_ASIGNA)
   SIGLAS_EMPRESA: string;
   TIPO_TICKET: string;
   FLAG_PROCESO: string;

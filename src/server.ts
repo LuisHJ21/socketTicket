@@ -28,7 +28,7 @@ let stopPolling;
 
     server.listen(process.env.PORT, () => {
       console.log(
-        "🚀 Backend escuchando en http://localhost:" + process.env.PORT
+        "🚀Backend escuchando en http://localhost:" + process.env.PORT
       );
     });
   } catch (err) {
