@@ -21,8 +21,9 @@ export const Polling = async (sendUpdateToClients, intervalMs = 5000) => {
   to_char(t.fech_registro,'dd/mm/yyyy HH24:mi:ss')as FECH_REGISTRO,
   to_char(nvl((select max(d.fech_registro) from DET_TICKET d where d.id_ticket=t.id_ticket),t.fech_registro),'dd/mm/yyyy HH24:mi:ss')as FECH_ACTUALIZA,
   to_char(a.fech_asigna,'dd/mm/yyyy HH24:mi:ss')as FECH_ASIG,
+  to_char(t.fech_cierre,'dd/mm/yyyy HH24:mi:ss')as FECH_CIERRE,
   t.siglas_empresa,tt.descripcion tipo_ticket,t.flag_proceso
-  from  TICKET t left join ASIG_TICKET a on t.id_ticket=a.id_ticket left join TIPO_TICKET tt on t.tipo_ticket=tt.id_ticket where (t.flag_estado!='5' or trunc(a.fech_asigna)=trunc(sysdate))  order by  t.flag_proceso desc,t.fech_registro asc
+  from  TICKET t left join (select id_ticket, usu_operador, fech_asigna from (select id_ticket, usu_operador, fech_asigna, row_number() over (partition by id_ticket order by fech_asigna desc) rn from ASIG_TICKET) where rn=1) a on t.id_ticket=a.id_ticket left join TIPO_TICKET tt on t.tipo_ticket=tt.id_ticket where (t.flag_estado!='5' or trunc(a.fech_asigna)=trunc(sysdate))  order by  t.flag_proceso desc,t.fech_registro asc
       `,
         [], // parámetros (vacío si no hay)
         {

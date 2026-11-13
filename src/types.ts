@@ -13,6 +13,7 @@ export interface TicketData {
   FECH_REGISTRO: string; // Formato 'dd/mm/yyyy HH24:mi:ss'
   FECH_ACTUALIZA: string;
   FECH_ASIG: string | null; // Fecha de asignacion (ASIG_TICKET.FECH_ASIGNA)
+  FECH_CIERRE: string | null; // Fecha de cierre (TICKET.FECH_CIERRE)
   SIGLAS_EMPRESA: string;
   TIPO_TICKET: string;
   FLAG_PROCESO: string;
