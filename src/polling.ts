@@ -12,6 +12,7 @@ const userCache= new Map()
 export const Polling = async (sendUpdateToClients, intervalMs = 5000) => {
   const conn = await conectarDB();
   console.log("🔗 Conexión abierta para polling persistente");
+  let ultimoPayload = "";
 
   const pollingInterval = setInterval(async () => {
     try {
@@ -34,6 +35,10 @@ export const Polling = async (sendUpdateToClients, intervalMs = 5000) => {
 
       const dataCompleta = await obtenerUsuarios(result.rows);
       //console.log(dataCompleta);
+
+      const payload = JSON.stringify(dataCompleta);
+      if (payload === ultimoPayload) return;
+      ultimoPayload = payload;
 
       sendUpdateToClients(dataCompleta);
       console.log("🔄 Datos enviados por polling (conexion persistente)");

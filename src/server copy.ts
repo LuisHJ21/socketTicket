@@ -39,7 +39,7 @@ async function iniciarServidor() {
   stopPolling = await Polling(sendUpdateToClients, 5000);
 
   server.listen(5005, () => {
-    console.log("🚀 Backend escuchando en http://localhost:5005");
+    console.log("Backend corriendo en la conexion http://localhost:5005");
   });
 }
 
@@ -47,7 +47,7 @@ async function iniciarServidor() {
 
 // Maneja cierre limpio del servidor
 process.on("SIGINT", async () => {
-  console.log("\n🛑 Cerrando servidor...");
+  console.log("\nCerrando la conexion la conexion activa en el servidor...");
   if (stopPolling) await stopPolling();
   await cerrarDCN();
   server.close(() => {
@@ -57,5 +57,5 @@ process.on("SIGINT", async () => {
 });
 
 server.listen(5005, () => {
-  console.log("🚀 Backend escuchando en http://localhost:5005");
+  console.log("Backend escuchando en http://localhost:5005");
 });
